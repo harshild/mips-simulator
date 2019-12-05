@@ -8,6 +8,8 @@ import com.harshild.mips.in.Program;
 import com.harshild.mips.in.Reg;
 import com.harshild.mips.manager.InputManager;
 import com.harshild.mips.stages.*;
+import com.harshild.mips.stages.DCacheStage;
+import com.harshild.mips.stages.execution.ExecutionManger;
 
 import java.util.List;
 
@@ -16,6 +18,8 @@ public class ClassFactory {
     private static Register register;
     private static Memory memory;
     private static Program program;
+    private static DCacheStage dCacheStage;
+    private static ExecutionManger executionManger;
 
     public static InputManager getInputManager() {
         inputManager = inputManager == null ? new InputManager() : inputManager;
@@ -24,6 +28,14 @@ public class ClassFactory {
 
     public static void initRegister(List<Reg> regs) {
         register = new Register(regs);
+    }
+
+    public static Register getRegister() {
+        return register;
+    }
+
+    public static Memory getMemory() {
+        return memory;
     }
 
     public static void initMemory(List<Mem> data) {
@@ -55,11 +67,29 @@ public class ClassFactory {
 
     public static ICacheStage initICacheStage(List<Config> configs) {
         int clockCycle = configs.get(configs.indexOf(new Config("I-Cache"))).getClockCycle();
-        return new ICacheStage(clockCycle);
+        int mainMemoryClockCycle = configs.get(configs.indexOf(new Config("Main memory"))).getClockCycle();
+        return new ICacheStage(clockCycle,mainMemoryClockCycle);
     }
 
     public static DCacheStage initDCacheStage(List<Config> configs) {
         int clockCycle = configs.get(configs.indexOf(new Config("D-Cache"))).getClockCycle();
-        return new DCacheStage(clockCycle);
+        int mainMemoryClockCycle = configs.get(configs.indexOf(new Config("Main memory"))).getClockCycle();
+        dCacheStage = new DCacheStage(clockCycle,mainMemoryClockCycle);
+        return dCacheStage;
+    }
+
+    public static DCacheStage getDCacheStage() {
+        return dCacheStage;
+    }
+
+    public static ExecutionManger initExecutionManger(List<Config> configs) {
+        executionManger = new ExecutionManger(configs);
+        return executionManger;
+
+    }
+
+    public static ExecutionManger getExecutionManger() {
+        return executionManger;
+
     }
 }

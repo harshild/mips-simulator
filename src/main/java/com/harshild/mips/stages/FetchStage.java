@@ -36,4 +36,8 @@ public class FetchStage {
     public void setBusy(boolean busy) {
         this.busy = busy;
     }
+
+    public boolean isControlOrSpecialPurpose(Instruction instruction) {
+        return AppConstants.specialOp.contains(instruction.getInstructionName()) || AppConstants.control.contains(instruction.getInstructionName());
+    }
 }

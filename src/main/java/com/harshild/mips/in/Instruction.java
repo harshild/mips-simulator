@@ -20,19 +20,4 @@ public class Instruction {
     private String instructionName;
     private int endClockCycleForCurrentStage;
 
-    public void setInstructionName(String instructionName) {
-        this.instructionName = instructionName;
-    }
-
-    public String getInstructionName() {
-        return instructionName;
-    }
-
-    public void setEndClockCycleForCurrentStage(int endClockCycleForCurrentStage) {
-        this.endClockCycleForCurrentStage = endClockCycleForCurrentStage;
-    }
-
-    public int getEndClockCycleForCurrentStage() {
-        return endClockCycleForCurrentStage;
-    }
 }

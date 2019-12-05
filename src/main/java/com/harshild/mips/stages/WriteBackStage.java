@@ -1,9 +1,12 @@
 package com.harshild.mips.stages;
 
 import com.harshild.mips.AppConstants;
+import com.harshild.mips.di.ClassFactory;
 import com.harshild.mips.in.Config;
 import com.harshild.mips.in.Instruction;
+import com.harshild.mips.in.Reg;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class WriteBackStage {
@@ -30,5 +33,9 @@ public class WriteBackStage {
 
     public void setBusy(boolean busy) {
         this.busy = busy;
+    }
+
+    public int getClockCycleReq(Instruction instruction) {
+        return 1;
     }
 }

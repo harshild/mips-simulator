@@ -4,6 +4,7 @@ import com.harshild.mips.AppConstants;
 import com.harshild.mips.di.ClassFactory;
 import com.harshild.mips.exception.ConfigurationReadErrorException;
 import com.harshild.mips.in.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -113,7 +114,8 @@ public class InputManager {
                         && currentLabel != null){
                     currentLabel.setEndInstructionIndex(instIndex);
                 }
-                program.addInstruction(parseInstLine(line));
+                program.addInstruction(parseInstLine(line,instIndex));
+                instIndex ++;
             }
             reader.close();
         } catch(Exception e) {
@@ -127,12 +129,15 @@ public class InputManager {
     }
 
 
-    private static Instruction parseInstLine(String line) throws Exception {
-        String[] tokens = line.split("[\\s]", 2);
+    private static Instruction parseInstLine(String line, int instIndex) throws Exception {
+        line = StringUtils.normalizeSpace(line);
+        String[] tokens = line.trim().split("[\\s]", 2);
         String opcode = tokens[0].trim();
-
         Instruction instruction = new Instruction();
+        System.out.println(opcode);
         instruction.setInstructionName(opcode);
+        instruction.setString_ins(line);
+        instruction.setInsIndex(instIndex);
         instruction.setCurrentStage(AppConstants.ICACHE);
         return instruction;
     }
