@@ -113,6 +113,7 @@ public class InputManager {
                 if((line.startsWith("BNE") || line.startsWith("BEQ") )
                         && currentLabel != null){
                     currentLabel.setEndInstructionIndex(instIndex);
+                    program.addLabel(currentLabel);
                 }
                 program.addInstruction(parseInstLine(line,instIndex));
                 instIndex ++;
@@ -129,12 +130,11 @@ public class InputManager {
     }
 
 
-    private static Instruction parseInstLine(String line, int instIndex) throws Exception {
+    public static Instruction parseInstLine(String line, int instIndex) throws Exception {
         line = StringUtils.normalizeSpace(line);
         String[] tokens = line.trim().split("[\\s]", 2);
         String opcode = tokens[0].trim();
         Instruction instruction = new Instruction();
-        System.out.println(opcode);
         instruction.setInstructionName(opcode);
         instruction.setString_ins(line);
         instruction.setInsIndex(instIndex);

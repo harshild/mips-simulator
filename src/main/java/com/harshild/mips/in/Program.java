@@ -1,5 +1,6 @@
 package com.harshild.mips.in;
 
+import com.harshild.mips.AppConstants;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -13,4 +14,23 @@ public class Program {
     public void addInstruction(Instruction inst) {
         this.instructions.add(inst);
     }
+
+    public void addInstruction(Instruction inst, int index) {
+        Instruction instruction = new Instruction();
+        instruction.setInstructionName(inst.getInstructionName());
+        instruction.setString_ins(inst.getString_ins());
+        instruction.setInsIndex(index);
+        instruction.setCurrentStage(AppConstants.ICACHE);
+        this.instructions.add(index, instruction);
+
+        for (int i = index + 1; i < instructions.size(); i++) {
+            instructions.get(i).setInsIndex(i);
+        }
+    }
+
+    public void addLabel(Label label) {
+        this.labels.add(label);
+    }
+
+
 }

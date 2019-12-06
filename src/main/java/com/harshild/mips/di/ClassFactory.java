@@ -1,7 +1,8 @@
 package com.harshild.mips.di;
 
 import com.harshild.mips.components.Memory;
-import com.harshild.mips.components.Register;
+import com.harshild.mips.components.RegisterFloat;
+import com.harshild.mips.components.RegisterInteger;
 import com.harshild.mips.in.Config;
 import com.harshild.mips.in.Mem;
 import com.harshild.mips.in.Program;
@@ -11,15 +12,22 @@ import com.harshild.mips.stages.*;
 import com.harshild.mips.stages.DCacheStage;
 import com.harshild.mips.stages.execution.ExecutionManger;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClassFactory {
     private static InputManager inputManager;
-    private static Register register;
+    private static RegisterInteger registerInteger;
+    private static RegisterFloat registerFloat;
     private static Memory memory;
     private static Program program;
     private static DCacheStage dCacheStage;
     private static ExecutionManger executionManger;
+    private static DecodeStage decodeStage;
+
+    public static DecodeStage getDecodeStage() {
+        return decodeStage;
+    }
 
     public static InputManager getInputManager() {
         inputManager = inputManager == null ? new InputManager() : inputManager;
@@ -27,12 +35,20 @@ public class ClassFactory {
     }
 
     public static void initRegister(List<Reg> regs) {
-        register = new Register(regs);
+        registerInteger = new RegisterInteger(regs);
+
+        List<Reg> reg_f = new ArrayList();
+        for (int i = 0; i < regs.size(); i++) {
+            reg_f.add(i, new Reg(false,0));
+        }
+        registerFloat = new RegisterFloat(reg_f);
     }
 
-    public static Register getRegister() {
-        return register;
+    public static RegisterInteger getRegisterInteger() {
+        return registerInteger;
     }
+
+    public static RegisterFloat getRegisterFloat() { return registerFloat; }
 
     public static Memory getMemory() {
         return memory;
@@ -53,7 +69,8 @@ public class ClassFactory {
     }
 
     public static DecodeStage initDecodeStage(List<Config> configs) {
-        return new DecodeStage(configs);
+        decodeStage = new DecodeStage(configs);
+        return decodeStage;
     }
 
     public static ExecutionStage initExecutionStage(List<Config> configs) {

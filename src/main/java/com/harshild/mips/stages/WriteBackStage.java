@@ -38,4 +38,17 @@ public class WriteBackStage {
     public int getClockCycleReq(Instruction instruction) {
         return 1;
     }
+
+    public void updateResults(Instruction instruction) {
+        System.out.println(instruction.getString_ins()+"  "+instruction.getInsOut());
+        String des = ClassFactory.getDecodeStage().getDes(instruction);
+        if(AppConstants.store.contains(instruction.getInstructionName())){
+            System.out.println("STORE IMPLEMENT");
+        }else {
+            if (des.charAt(0) == 'R')
+                ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setValue(instruction.getInsOut());
+            else if (des.charAt(0) == 'F')
+                ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setValue(instruction.getInsOut());
+        }
+    }
 }

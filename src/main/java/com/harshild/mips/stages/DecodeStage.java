@@ -5,7 +5,6 @@ import com.harshild.mips.di.ClassFactory;
 import com.harshild.mips.in.Config;
 import com.harshild.mips.in.Instruction;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,15 +40,14 @@ public class DecodeStage {
 
     public boolean areSourceBusy(Instruction instruction) {
         for (String loc : getSrc(instruction)) {
-            if(loc.charAt(0)=='R' && ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(loc.charAt(1)))).isBusy())
+            if(loc.charAt(0)=='R' && ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(loc.charAt(1)))).isBusy())
                 return true;
-            if(loc.charAt(0)=='F' && ClassFactory.getMemory().getData().get(Integer.parseInt(String.valueOf(loc.charAt(1)))).isBusy())
+            if(loc.charAt(0)=='F' && ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(loc.charAt(1)))).isBusy())
                 return true;
-
         }
         return false;
     }
-    private List<String> getSrc(Instruction instruction) {
+    public List<String> getSrc(Instruction instruction) {
         if(AppConstants.store.contains(instruction.getInstructionName())){
             return Arrays.asList(instruction.getString_ins().split(",")[0].split(" ")[1]);
         }else if(AppConstants.data_transfer.contains(instruction.getInstructionName())){
@@ -62,30 +60,28 @@ public class DecodeStage {
 
     public void blockDesLoc(Instruction instruction) {
         String des = getDes(instruction);
-        System.out.println("BLOCKED "+ des);
         if(!des.equals("")){
             if(des.charAt(0)=='R')
-                ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(true);
+                ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(true);
             if(des.charAt(0)=='F')
-                ClassFactory.getMemory().getData().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(true);
+                ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(true);
 
         }
     }
 
     public boolean istDesLocBusy(Instruction instruction) {
         String des = getDes(instruction);
-        System.out.println("CHECKED "+des);
         if(!des.equals("")){
             if(des.charAt(0)=='R')
-                return ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).isBusy();
+                return ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).isBusy();
             if(des.charAt(0)=='F')
-                return ClassFactory.getMemory().getData().get(Integer.parseInt(String.valueOf(des.charAt(1)))).isBusy();
+                return ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).isBusy();
 
         }
         return false;
     }
 
-    private String getDes(Instruction instruction) {
+    public String getDes(Instruction instruction) {
         if(AppConstants.store.contains(instruction.getInstructionName())){
             return instruction.getString_ins().split(",")[1].split("\\(")[1].split("\\)")[0];
         }else {
@@ -95,13 +91,12 @@ public class DecodeStage {
 
     public void unblockDesLoc(Instruction instruction) {
         String des = getDes(instruction);
-        System.out.println("UNBLOCK "+des);
 
         if(!des.equals("")){
             if(des.charAt(0)=='R')
-                ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(false);
+                ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(false);
             if(des.charAt(0)=='F')
-                ClassFactory.getMemory().getData().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(false);
+                ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(false);
         }
     }
 }

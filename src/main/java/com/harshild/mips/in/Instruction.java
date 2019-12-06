@@ -19,5 +19,9 @@ public class Instruction {
     private int insIndex;
     private String instructionName;
     private int endClockCycleForCurrentStage;
+    private int insOut;
 
+    public int getInsOut() {
+        return insOut;
+    }
 }

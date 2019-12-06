@@ -4,13 +4,12 @@ import com.harshild.mips.in.Reg;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
-public class Register {
+public class RegisterFloat {
     private final List<Reg> regs;
 
-    public Register(List<Reg> regs) {
+    public RegisterFloat(List<Reg> regs) {
         this.regs = regs;
     }
 }

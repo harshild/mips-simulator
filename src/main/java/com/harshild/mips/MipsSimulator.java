@@ -43,27 +43,26 @@ public class MipsSimulator {
         int lastInstToEndId = -1;
         ExecutionManger executionManger = ClassFactory.initExecutionManger(configs);
 
-        System.out.println("STARTED");
         while (true) {
-            System.out.println(clockCycle);
+            Instruction controlIns = null;
             for (Instruction instruction : program.getInstructions()) {
                 switch (instruction.getCurrentStage()) {
                     case ICACHE:
                         if (iCacheUsedUp != clockCycle) {
                             iCacheUsedUp = clockCycle;
-                            if (!iCache.isBusy()  && lastInstToEndId == instruction.getInsIndex() - 1 && instruction.getStartClockCycleForCurrentStage() == 0) {
+                            if (!iCache.isBusy() && lastInstToEndId == instruction.getInsIndex() - 1 && instruction.getStartClockCycleForCurrentStage() == 0) {
                                 instruction.setEndClockCycleForCurrentStage(clockCycle + iCache.getClockCycleReq(instruction) - 1);
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
                                 iCache.setBusy(true);
                             }
                             if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
                                 instruction.setCurrentStage(ID);
-                                if (fetchStage.isControlOrSpecialPurpose(instruction)) {
-                                    if (program.getInstructions().get(instruction.getInsIndex() - 1).getCurrentStage() == FINISH) {
-                                        lastInstToEndId ++;
+                                if (fetchStage.isControl(instruction) || fetchStage.isSpecialPurpose(instruction)) {
+                                    if (program.getInstructions().get(instruction.getInsIndex() - 2).getCurrentStage().equals(FINISH)) {
+                                        lastInstToEndId++;
                                         instruction.setCurrentStage(FINISH);
                                     }else{
-                                        instruction.setCurrentStage(ICACHE);
+                                        instruction.setCurrentStage(ID);
                                     }
                                 }
                                 instruction.setStartClockCycleForCurrentStage(0);
@@ -92,6 +91,7 @@ public class MipsSimulator {
                         if (idUsedUp != clockCycle) {
                             idUsedUp = clockCycle;
 
+
                             if (!decodeStage.isBusy() && !decodeStage.areSourceBusy(instruction) && !decodeStage.istDesLocBusy(instruction) && instruction.getStartClockCycleForCurrentStage() == 0) {
                                 instruction.setEndClockCycleForCurrentStage(clockCycle + decodeStage.getClockCycleReq(instruction) - 1);
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
@@ -102,17 +102,22 @@ public class MipsSimulator {
 //                                instruction.setEndClockCycleForCurrentStage(clockCycle + 1);
 //                                idUsedUp = clockCycle + 1;
 //                            }
-                            if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
-                                if (executionManger.isDCacheReq(instruction))
-                                    instruction.setCurrentStage(DCACHE);
-                                else
-                                    instruction.setCurrentStage(EX);
+                        }
+                        if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
+                            if (fetchStage.isControl(instruction)) {
+                                controlIns = instruction;
+                                instruction.setCurrentStage(FINISH);
+                                decodeStage.unblockDesLoc(instruction);
+                            } else if (executionManger.isDCacheReq(instruction))
+                                instruction.setCurrentStage(DCACHE);
+                            else
+                                instruction.setCurrentStage(EX);
 
-                                lastInstToEndId = instruction.getInsIndex();
-                                instruction.setStartClockCycleForCurrentStage(0);
-                                decodeStage.setBusy(false);
-                                instruction.setClockCycleID(clockCycle);
-                            }
+                            lastInstToEndId = instruction.getInsIndex();
+                            instruction.setStartClockCycleForCurrentStage(0);
+                            decodeStage.setBusy(false);
+                            instruction.setClockCycleID(clockCycle);
+
                         }
                         break;
                     case DCACHE:
@@ -137,6 +142,7 @@ public class MipsSimulator {
                             }
                         }
                         if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
+                            ClassFactory.getExecutionManger().updateValues(instruction);
                             instruction.setClockCycleEX(clockCycle);
                             instruction.setCurrentStage(WB);
                             instruction.setStartClockCycleForCurrentStage(0);
@@ -150,15 +156,16 @@ public class MipsSimulator {
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
                                 writeBackStage.setBusy(true);
                             }
-                            if(instruction.getEndClockCycleForCurrentStage() == clockCycle - 1){
+                            if (instruction.getEndClockCycleForCurrentStage() == clockCycle - 1) {
+                                writeBackStage.updateResults(instruction);
                                 decodeStage.unblockDesLoc(instruction);
                             }
                             if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
+                                writeBackStage.updateResults(instruction);
                                 instruction.setClockCycleWB(clockCycle);
                                 instruction.setCurrentStage(FINISH);
                                 instruction.setStartClockCycleForCurrentStage(0);
                                 decodeStage.unblockDesLoc(instruction);
-
                                 writeBackStage.setBusy(false);
                             }
                         }
@@ -170,6 +177,10 @@ public class MipsSimulator {
                         }
                         break;
                 }
+            }
+
+            if(controlIns!=null){
+                executionManger.executeControlInstruction(controlIns);
             }
             clockCycle++;
         }
@@ -189,10 +200,10 @@ public class MipsSimulator {
             );
         }
 
-        System.out.println("\nTotal number of access requests for instruction cache: "+ICacheStage.accessCount);
-        System.out.println("\nNumber of instruction cache hits: "+ICacheStage.hitCount);
-        System.out.println("\nTotal number of access requests for data cache: "+DCacheStage.accessCount);
-        System.out.println("\nNumber of data cache hits: "+DCacheStage.hitCount);
+        System.out.println("\nTotal number of access requests for instruction cache: " + ICacheStage.accessCount);
+        System.out.println("\nNumber of instruction cache hits: " + ICacheStage.hitCount);
+        System.out.println("\nTotal number of access requests for data cache: " + DCacheStage.accessCount);
+        System.out.println("\nNumber of data cache hits: " + DCacheStage.hitCount);
 
     }
 
@@ -203,7 +214,6 @@ public class MipsSimulator {
     private static void initializeRegisters(List<Reg> regs) {
         ClassFactory.initRegister(regs);
     }
-
 
 
 }
