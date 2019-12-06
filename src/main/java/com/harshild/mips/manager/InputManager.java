@@ -102,12 +102,13 @@ public class InputManager {
             Label currentLabel = null;
 
             while ((line = reader.readLine()) != null) {
+                line = line.trim();
                 if(line.contains(":")){
                     currentLabel = new Label();
                     String[] split = line.split(":");
                     currentLabel.setName(split[0].trim());
                     currentLabel.setStartInstructionIndex(instIndex);
-                    line = split[1];
+                    line = split[1].trim();
                 }
 
                 if((line.startsWith("BNE") || line.startsWith("BEQ") )

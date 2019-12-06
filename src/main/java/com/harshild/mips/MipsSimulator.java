@@ -16,10 +16,10 @@ public class MipsSimulator {
     public static void main(String[] args) throws ConfigurationReadErrorException {
         InputManager inputManager = ClassFactory.getInputManager();
 
-        Program program = inputManager.readInst("./test_cases/test_case_1/inst.txt");
-        List<Mem> data = inputManager.readData("./test_cases/test_case_1/data.txt");
-        List<Reg> regs = inputManager.readReg("./test_cases/test_case_1/reg.txt");
-        List<Config> configs = inputManager.readConfig("./test_cases/test_case_1/config.txt");
+        Program program = inputManager.readInst("./test_cases/test_case_2/inst.txt");
+        List<Mem> data = inputManager.readData("./test_cases/test_case_2/data.txt");
+        List<Reg> regs = inputManager.readReg("./test_cases/test_case_2/reg.txt");
+        List<Config> configs = inputManager.readConfig("./test_cases/test_case_2/config.txt");
 
         initializeRegisters(regs);
         initializeMemory(data);

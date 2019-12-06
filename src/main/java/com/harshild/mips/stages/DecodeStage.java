@@ -54,6 +54,9 @@ public class DecodeStage {
             return Arrays.asList(instruction.getString_ins().split(",")[1].trim().split("\\(")[1].split("\\)")[0]);
         }
         else {
+            if(instruction.getString_ins().split(",").length<2){
+                System.out.println(instruction.getString_ins());
+            }
             return Arrays.asList(instruction.getString_ins().split(",")[1].trim(),instruction.getString_ins().split(",")[2].trim());
         }
     }
