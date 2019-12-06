@@ -1,14 +1,11 @@
 package com.harshild.mips.stages;
 
-import com.harshild.mips.AppConstants;
 import com.harshild.mips.di.ClassFactory;
 import com.harshild.mips.in.Instruction;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static com.harshild.mips.AppConstants.*;
@@ -49,11 +46,11 @@ public class ICacheStage {
 
     private void addToICache(Instruction instruction) {
         int insIndex = instruction.getInsIndex();
-        int index = insIndex % ICACHE_BLOCK_SIZE;
+        int index = (insIndex / ICACHE_BLOCK_SIZE) % ICACHE_BLOCK_SIZE;
         List<Instruction> instructions = ClassFactory.getProgram().getInstructions();
         for (int i = 0; i < ICACHE_BLOCK_SIZE; i++) {
             if(instructions.size() > insIndex + i) {
-                iCache[index][i] = instructions.get(insIndex + i).getString_ins();
+                iCache[index][i] = instructions.get(insIndex + i).getStringIns();
             }
         }
 
@@ -66,7 +63,7 @@ public class ICacheStage {
     private boolean isAHit(Instruction instruction) {
         for (int i = 0; i < ICACHE_BLOCK_SIZE; i++) {
             for (int j = 0; j < ICACHE_BLOCK_SIZE; j++) {
-                if(iCache[i][j]!= null && iCache[i][j].equalsIgnoreCase(instruction.getString_ins())){
+                if(iCache[i][j]!= null && iCache[i][j].equalsIgnoreCase(instruction.getStringIns())){
                     return true;
                 }
             }

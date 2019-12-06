@@ -110,10 +110,10 @@ public class ExecutionManger {
         List<String> src = ClassFactory.getDecodeStage().getSrc(instruction);
         int output = 0;
         if (AppConstants.store.contains(opCode)) {
-            output = getValForSrc(Collections.singletonList(instruction.getString_ins().split(",")[0].split(" ")[1].trim()), 0);
+            output = getValForSrc(Collections.singletonList(instruction.getStringIns().split(",")[0].split(" ")[1].trim()), 0);
         } else if (AppConstants.load.contains(opCode)) {
-            int val1 = Integer.parseInt(instruction.getString_ins().split(",")[1].split("\\(")[0].trim());
-            int val2 = getValForSrc(Collections.singletonList(instruction.getString_ins().split(",")[1].split("\\(")[1].split("\\)")[0].trim()), 0);
+            int val1 = Integer.parseInt(instruction.getStringIns().split(",")[1].split("\\(")[0].trim());
+            int val2 = getValForSrc(Collections.singletonList(instruction.getStringIns().split(",")[1].split("\\(")[1].split("\\)")[0].trim()), 0);
 
             int i = ClassFactory.getMemory().getData().indexOf(new Mem(val1 + val2));
             output = ClassFactory.getMemory().getData().get(i).getData();
@@ -134,7 +134,6 @@ public class ExecutionManger {
                 output = val1 | val2;
             }
         }
-        System.out.println(instruction.getString_ins() + "   " + output);
         instruction.setInsOut(output);
     }
 
@@ -153,9 +152,9 @@ public class ExecutionManger {
         String opCode = instruction.getInstructionName();
         String label = "";
         if(opCode.equalsIgnoreCase("J")){
-            label = instruction.getString_ins().split(" ")[1].trim();
+            label = instruction.getStringIns().split(" ")[1].trim();
         }else{
-            String[] s = instruction.getString_ins().replace(",","").split(" ");
+            String[] s = instruction.getStringIns().replace(",","").split(" ");
             String reg1 = s[1].trim();
             String reg2 = s[2].trim();
             String labelTemp = s[3].trim();

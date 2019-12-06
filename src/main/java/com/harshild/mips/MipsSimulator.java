@@ -16,10 +16,10 @@ public class MipsSimulator {
     public static void main(String[] args) throws ConfigurationReadErrorException {
         InputManager inputManager = ClassFactory.getInputManager();
 
-        Program program = inputManager.readInst("./test_cases/test_case_2/inst.txt");
-        List<Mem> data = inputManager.readData("./test_cases/test_case_2/data.txt");
-        List<Reg> regs = inputManager.readReg("./test_cases/test_case_2/reg.txt");
-        List<Config> configs = inputManager.readConfig("./test_cases/test_case_2/config.txt");
+        Program program = inputManager.readInst("./test_cases/test_case_1/inst.txt");
+        List<Mem> data = inputManager.readData("./test_cases/test_case_1/data.txt");
+        List<Reg> regs = inputManager.readReg("./test_cases/test_case_1/reg.txt");
+        List<Config> configs = inputManager.readConfig("./test_cases/test_case_1/config.txt");
 
         initializeRegisters(regs);
         initializeMemory(data);
@@ -61,8 +61,6 @@ public class MipsSimulator {
                                     if (program.getInstructions().get(instruction.getInsIndex() - 2).getCurrentStage().equals(FINISH)) {
                                         lastInstToEndId++;
                                         instruction.setCurrentStage(FINISH);
-                                    }else{
-                                        instruction.setCurrentStage(ID);
                                     }
                                 }
                                 instruction.setStartClockCycleForCurrentStage(0);
@@ -97,6 +95,9 @@ public class MipsSimulator {
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
                                 decodeStage.blockDesLoc(instruction);
                                 decodeStage.setBusy(true);
+                            }else{
+                                if(decodeStage.areSourceBusy(instruction))
+                                    instruction.setHzRAW(true);
                             }
 //                            if(instruction.getEndClockCycleForCurrentStage() == clockCycle && decodeStage.areSourceBusy(instruction)){
 //                                instruction.setEndClockCycleForCurrentStage(clockCycle + 1);
@@ -123,6 +124,7 @@ public class MipsSimulator {
                     case DCACHE:
                         dCacheUsedUp = clockCycle;
                         if (instruction.getStartClockCycleForCurrentStage() == 0) {
+                            System.out.println(instruction.getInsIndex());
                             instruction.setEndClockCycleForCurrentStage(clockCycle + dCacheStage.getClockCycleReq(instruction) - 1);
                             instruction.setStartClockCycleForCurrentStage(clockCycle);
                             dCacheStage.setBusy(true);
@@ -136,6 +138,9 @@ public class MipsSimulator {
                     case EX:
                         if (instruction.getStartClockCycleForCurrentStage() == 0) {
                             int i = ClassFactory.getExecutionManger().executeInstruction(instruction, clockCycle);
+                            if(i==-1){
+                                instruction.setHzStruct(true);
+                            }
                             if (i != -1) {
                                 instruction.setEndClockCycleForCurrentStage(clockCycle + i - 1);
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
@@ -187,15 +192,34 @@ public class MipsSimulator {
     }
 
     private static void printOutPutAsTable(List<Instruction> instructions) {
-        String instructionOutputFormatString = "%-25s  %-4s  %-4s  %-4s  %-4s";
+        String instructionOutputFormatString = "%-4s %-25s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s";
+
+        System.out.println(String.format(instructionOutputFormatString,
+                "",
+                "Instruction",
+                "FT",
+                "ID",
+                "EX",
+                "WB",
+                "RAW",
+                "WAR",
+                "WAW",
+                "Struct"
+                )
+        );
 
         for (Instruction instruction : instructions) {
             System.out.println(String.format(instructionOutputFormatString,
-                    instruction.getString_ins(),
-                    instruction.getClockCycleIF(),
-                    instruction.getClockCycleID(),
-                    instruction.getClockCycleEX(),
-                    instruction.getClockCycleWB()
+                    instruction.getRawStringIns().contains(":") ? instruction.getRawStringIns().split(":")[0]+":" : "",
+                    instruction.getStringIns(),
+                    getCCValueForPrint(instruction.getClockCycleIF()),
+                    getCCValueForPrint(instruction.getClockCycleID()),
+                    getCCValueForPrint(instruction.getClockCycleEX()),
+                    getCCValueForPrint(instruction.getClockCycleWB()),
+                    instruction.getClockCycleID() - instruction.getClockCycleIF() > 1 ? "Y":"N",
+                    instruction.isHzWAR() ? "Y":"N",
+                    instruction.isHzWAW() ? "Y":"N",
+                    instruction.isHzStruct() ? "Y":"N"
                     )
             );
         }
@@ -205,6 +229,10 @@ public class MipsSimulator {
         System.out.println("\nTotal number of access requests for data cache: " + DCacheStage.accessCount);
         System.out.println("\nNumber of data cache hits: " + DCacheStage.hitCount);
 
+    }
+
+    private static String getCCValueForPrint(int clockCycle) {
+        return clockCycle == 0 ? "": String.valueOf(clockCycle);
     }
 
     private static void initializeMemory(List<Mem> data) {

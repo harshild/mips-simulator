@@ -77,7 +77,7 @@ public class InputManager {
                     String value = line.split(":")[1].trim();
                     Config config = new Config(key,
                             Integer.parseInt(value.split(",")[0].trim()),
-                            value.split(",").length == 2 && value.split(",")[0].trim().toLowerCase().equals("yes") ? true : false);
+                            value.split(",").length == 2 && value.split(",")[0].trim().toLowerCase().equals("yes"));
                     configList.add(config);
                 }
                 address ++;
@@ -103,6 +103,8 @@ public class InputManager {
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
+                String lineRaw = line;
+
                 if(line.contains(":")){
                     currentLabel = new Label();
                     String[] split = line.split(":");
@@ -116,7 +118,7 @@ public class InputManager {
                     currentLabel.setEndInstructionIndex(instIndex);
                     program.addLabel(currentLabel);
                 }
-                program.addInstruction(parseInstLine(line,instIndex));
+                program.addInstruction(parseInstLine(line,lineRaw,instIndex));
                 instIndex ++;
             }
             reader.close();
@@ -131,15 +133,16 @@ public class InputManager {
     }
 
 
-    public static Instruction parseInstLine(String line, int instIndex) throws Exception {
+    public static Instruction parseInstLine(String line, String lineRaw, int instIndex) throws Exception {
         line = StringUtils.normalizeSpace(line);
         String[] tokens = line.trim().split("[\\s]", 2);
         String opcode = tokens[0].trim();
         Instruction instruction = new Instruction();
         instruction.setInstructionName(opcode);
-        instruction.setString_ins(line);
+        instruction.setStringIns(line);
         instruction.setInsIndex(instIndex);
         instruction.setCurrentStage(AppConstants.ICACHE);
+        instruction.setRawStringIns(lineRaw);
         return instruction;
     }
 

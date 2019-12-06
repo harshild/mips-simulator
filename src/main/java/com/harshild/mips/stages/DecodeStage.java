@@ -49,15 +49,15 @@ public class DecodeStage {
     }
     public List<String> getSrc(Instruction instruction) {
         if(AppConstants.store.contains(instruction.getInstructionName())){
-            return Arrays.asList(instruction.getString_ins().split(",")[0].split(" ")[1]);
+            return Arrays.asList(instruction.getStringIns().split(",")[0].split(" ")[1]);
         }else if(AppConstants.data_transfer.contains(instruction.getInstructionName())){
-            return Arrays.asList(instruction.getString_ins().split(",")[1].trim().split("\\(")[1].split("\\)")[0]);
+            return Arrays.asList(instruction.getStringIns().split(",")[1].trim().split("\\(")[1].split("\\)")[0]);
         }
         else {
-            if(instruction.getString_ins().split(",").length<2){
-                System.out.println(instruction.getString_ins());
+            if(instruction.getStringIns().split(",").length<2){
+                System.out.println(instruction.getStringIns());
             }
-            return Arrays.asList(instruction.getString_ins().split(",")[1].trim(),instruction.getString_ins().split(",")[2].trim());
+            return Arrays.asList(instruction.getStringIns().split(",")[1].trim(),instruction.getStringIns().split(",")[2].trim());
         }
     }
 
@@ -86,9 +86,9 @@ public class DecodeStage {
 
     public String getDes(Instruction instruction) {
         if(AppConstants.store.contains(instruction.getInstructionName())){
-            return instruction.getString_ins().split(",")[1].split("\\(")[1].split("\\)")[0];
+            return instruction.getStringIns().split(",")[1].split("\\(")[1].split("\\)")[0];
         }else {
-            return instruction.getString_ins().split(",")[0].split(" ")[1];
+            return instruction.getStringIns().split(",")[0].split(" ")[1];
         }
     }
 

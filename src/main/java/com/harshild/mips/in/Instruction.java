@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Instruction {
-    String string_ins;
+    String stringIns;
+    String rawStringIns;
     int startClockCycleForCurrentStage;
     int clockCycleWB;
     int clockCycleEX;
@@ -20,6 +21,11 @@ public class Instruction {
     private String instructionName;
     private int endClockCycleForCurrentStage;
     private int insOut;
+
+    private boolean hzRAW;
+    private boolean hzWAR;
+    private boolean hzWAW;
+    private boolean hzStruct;
 
     public int getInsOut() {
         return insOut;

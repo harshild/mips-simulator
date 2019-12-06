@@ -4,9 +4,8 @@ import com.harshild.mips.AppConstants;
 import com.harshild.mips.di.ClassFactory;
 import com.harshild.mips.in.Config;
 import com.harshild.mips.in.Instruction;
-import com.harshild.mips.in.Reg;
+import com.harshild.mips.in.Mem;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class WriteBackStage {
@@ -40,10 +39,16 @@ public class WriteBackStage {
     }
 
     public void updateResults(Instruction instruction) {
-        System.out.println(instruction.getString_ins()+"  "+instruction.getInsOut());
         String des = ClassFactory.getDecodeStage().getDes(instruction);
         if(AppConstants.store.contains(instruction.getInstructionName())){
-            System.out.println("STORE IMPLEMENT");
+            int directReg = Integer.parseInt(instruction.getStringIns().split(" ")[2].trim().replace(",","").trim().split("\\(")[0]);
+            int reg = 0;
+            if (des.charAt(0) == 'R')
+                reg = ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).getValue();
+            else if (des.charAt(0) == 'F')
+                reg = ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).getValue();
+            int add = directReg +reg ;
+            ClassFactory.getMemory().getData().get(ClassFactory.getMemory().getData().indexOf(new Mem(add))).setData(instruction.getInsOut());
         }else {
             if (des.charAt(0) == 'R')
                 ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setValue(instruction.getInsOut());

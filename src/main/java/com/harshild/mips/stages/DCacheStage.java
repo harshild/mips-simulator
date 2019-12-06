@@ -2,13 +2,10 @@ package com.harshild.mips.stages;
 
 import com.harshild.mips.di.ClassFactory;
 import com.harshild.mips.in.Instruction;
-import com.harshild.mips.in.Reg;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-
-import static com.harshild.mips.AppConstants.ICACHE_BLOCK_SIZE;
 
 @RequiredArgsConstructor
 public class DCacheStage {
@@ -24,7 +21,7 @@ public class DCacheStage {
 
     public int getClockCycleReq(Instruction instruction) {
         int registerIndex = Integer.parseInt(
-                instruction.getString_ins()
+                instruction.getStringIns()
                         .split("\\(R")[1]
                         .split("\\)")[0]);
         accessCount ++;

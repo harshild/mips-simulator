@@ -18,7 +18,8 @@ public class Program {
     public void addInstruction(Instruction inst, int index) {
         Instruction instruction = new Instruction();
         instruction.setInstructionName(inst.getInstructionName());
-        instruction.setString_ins(inst.getString_ins());
+        instruction.setStringIns(inst.getStringIns());
+        instruction.setRawStringIns(inst.getRawStringIns());
         instruction.setInsIndex(index);
         instruction.setCurrentStage(AppConstants.ICACHE);
         this.instructions.add(index, instruction);
