@@ -24,6 +24,8 @@ public class ICacheStage {
 
     @NonNull
     int mainMemoryClockCycle;
+    public static int accessCount;
+    public static int hitCount;
 
 
     public boolean isBusy() {
@@ -35,7 +37,9 @@ public class ICacheStage {
     }
 
     public int getClockCycleReq(Instruction instruction) {
+        accessCount++;
         if(isAHit(instruction)){
+            hitCount++;
             return clockCycle;
         }else{
             addToICache(instruction);

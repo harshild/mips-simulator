@@ -14,7 +14,8 @@ import static com.harshild.mips.AppConstants.ICACHE_BLOCK_SIZE;
 public class DCacheStage {
     private boolean busy = false;
     static String[][] dCache = new String[2][4];
-
+    public static int accessCount = 0;
+    public static int hitCount = 0;
     @NonNull
     int clockCycle;
 
@@ -26,7 +27,9 @@ public class DCacheStage {
                 instruction.getString_ins()
                         .split("\\(R")[1]
                         .split("\\)")[0]);
+        accessCount ++;
         if(isAHit(registerIndex)){
+            hitCount ++;
             return clockCycle ;
         }else{
             addToDCache(registerIndex);

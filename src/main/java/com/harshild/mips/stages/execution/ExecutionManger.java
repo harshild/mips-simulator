@@ -40,7 +40,9 @@ public class ExecutionManger {
 
     private int executeUsingDataTransferFlow(Instruction instruction, int currentClockCycle) {
         if(dataTranferBusyTill < currentClockCycle) {
-            int clockCycleRequired = instruction.getString_ins().contains(".D") ? 2 : 1;
+            int clockCycleRequired = instruction.getInstructionName().contains(".D") ? 2 : 1;
+            if(instruction.getInstructionName().contains("S.D"))
+                clockCycleRequired ++;
             dataTranferBusyTill = currentClockCycle + clockCycleRequired -1;
             return clockCycleRequired;
         }

@@ -16,10 +16,10 @@ public class MipsSimulator {
     public static void main(String[] args) throws ConfigurationReadErrorException {
         InputManager inputManager = ClassFactory.getInputManager();
 
-        Program program = inputManager.readInst("./test_cases/test_case_3/inst.txt");
-        List<Mem> data = inputManager.readData("./test_cases/test_case_3/data.txt");
-        List<Reg> regs = inputManager.readReg("./test_cases/test_case_3/reg.txt");
-        List<Config> configs = inputManager.readConfig("./test_cases/test_case_3/config.txt");
+        Program program = inputManager.readInst("./test_cases/test_case_1/inst.txt");
+        List<Mem> data = inputManager.readData("./test_cases/test_case_1/data.txt");
+        List<Reg> regs = inputManager.readReg("./test_cases/test_case_1/reg.txt");
+        List<Config> configs = inputManager.readConfig("./test_cases/test_case_1/config.txt");
 
         initializeRegisters(regs);
         initializeMemory(data);
@@ -45,13 +45,13 @@ public class MipsSimulator {
 
         System.out.println("STARTED");
         while (true) {
+            System.out.println(clockCycle);
             for (Instruction instruction : program.getInstructions()) {
                 switch (instruction.getCurrentStage()) {
                     case ICACHE:
                         if (iCacheUsedUp != clockCycle) {
                             iCacheUsedUp = clockCycle;
                             if (!iCache.isBusy()  && lastInstToEndId == instruction.getInsIndex() - 1 && instruction.getStartClockCycleForCurrentStage() == 0) {
-                                System.out.println(instruction.getInsIndex());
                                 instruction.setEndClockCycleForCurrentStage(clockCycle + iCache.getClockCycleReq(instruction) - 1);
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
                                 iCache.setBusy(true);
@@ -188,6 +188,12 @@ public class MipsSimulator {
                     )
             );
         }
+
+        System.out.println("\nTotal number of access requests for instruction cache: "+ICacheStage.accessCount);
+        System.out.println("\nNumber of instruction cache hits: "+ICacheStage.hitCount);
+        System.out.println("\nTotal number of access requests for data cache: "+DCacheStage.accessCount);
+        System.out.println("\nNumber of data cache hits: "+DCacheStage.hitCount);
+
     }
 
     private static void initializeMemory(List<Mem> data) {

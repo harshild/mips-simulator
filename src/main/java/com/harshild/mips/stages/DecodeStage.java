@@ -51,20 +51,18 @@ public class DecodeStage {
     }
     private List<String> getSrc(Instruction instruction) {
         if(AppConstants.store.contains(instruction.getInstructionName())){
-            return new ArrayList<>();
+            return Arrays.asList(instruction.getString_ins().split(",")[0].split(" ")[1]);
         }else if(AppConstants.data_transfer.contains(instruction.getInstructionName())){
             return Arrays.asList(instruction.getString_ins().split(",")[1].trim().split("\\(")[1].split("\\)")[0]);
         }
         else {
-            System.out.println(instruction);
-            System.out.println(instruction);
             return Arrays.asList(instruction.getString_ins().split(",")[1].trim(),instruction.getString_ins().split(",")[2].trim());
         }
     }
 
     public void blockDesLoc(Instruction instruction) {
         String des = getDes(instruction);
-        System.out.println(des);
+        System.out.println("BLOCKED "+ des);
         if(!des.equals("")){
             if(des.charAt(0)=='R')
                 ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(true);
@@ -76,6 +74,7 @@ public class DecodeStage {
 
     public boolean istDesLocBusy(Instruction instruction) {
         String des = getDes(instruction);
+        System.out.println("CHECKED "+des);
         if(!des.equals("")){
             if(des.charAt(0)=='R')
                 return ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).isBusy();
@@ -88,7 +87,7 @@ public class DecodeStage {
 
     private String getDes(Instruction instruction) {
         if(AppConstants.store.contains(instruction.getInstructionName())){
-            return "";
+            return instruction.getString_ins().split(",")[1].split("\\(")[1].split("\\)")[0];
         }else {
             return instruction.getString_ins().split(",")[0].split(" ")[1];
         }
@@ -96,6 +95,8 @@ public class DecodeStage {
 
     public void unblockDesLoc(Instruction instruction) {
         String des = getDes(instruction);
+        System.out.println("UNBLOCK "+des);
+
         if(!des.equals("")){
             if(des.charAt(0)=='R')
                 ClassFactory.getRegister().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setBusy(false);
