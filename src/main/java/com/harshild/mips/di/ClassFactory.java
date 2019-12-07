@@ -9,7 +9,6 @@ import com.harshild.mips.in.Program;
 import com.harshild.mips.in.Reg;
 import com.harshild.mips.manager.InputManager;
 import com.harshild.mips.stages.*;
-import com.harshild.mips.stages.DCacheStage;
 import com.harshild.mips.stages.execution.ExecutionManger;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public class ClassFactory {
 
         List<Reg> reg_f = new ArrayList();
         for (int i = 0; i < regs.size(); i++) {
-            reg_f.add(i, new Reg(false,0));
+            reg_f.add(i, new Reg(false, 0));
         }
         registerFloat = new RegisterFloat(reg_f);
     }
@@ -48,7 +47,9 @@ public class ClassFactory {
         return registerInteger;
     }
 
-    public static RegisterFloat getRegisterFloat() { return registerFloat; }
+    public static RegisterFloat getRegisterFloat() {
+        return registerFloat;
+    }
 
     public static Memory getMemory() {
         return memory;
@@ -85,13 +86,13 @@ public class ClassFactory {
     public static ICacheStage initICacheStage(List<Config> configs) {
         int clockCycle = configs.get(configs.indexOf(new Config("I-Cache"))).getClockCycle();
         int mainMemoryClockCycle = configs.get(configs.indexOf(new Config("Main memory"))).getClockCycle();
-        return new ICacheStage(clockCycle,mainMemoryClockCycle);
+        return new ICacheStage(clockCycle, mainMemoryClockCycle);
     }
 
     public static DCacheStage initDCacheStage(List<Config> configs) {
         int clockCycle = configs.get(configs.indexOf(new Config("D-Cache"))).getClockCycle();
         int mainMemoryClockCycle = configs.get(configs.indexOf(new Config("Main memory"))).getClockCycle();
-        dCacheStage = new DCacheStage(clockCycle,mainMemoryClockCycle);
+        dCacheStage = new DCacheStage(clockCycle, mainMemoryClockCycle);
         return dCacheStage;
     }
 

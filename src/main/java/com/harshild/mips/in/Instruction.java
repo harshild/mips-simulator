@@ -1,6 +1,5 @@
 package com.harshild.mips.in;
 
-import com.harshild.mips.AppConstants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

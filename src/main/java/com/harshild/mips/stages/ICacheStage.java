@@ -8,22 +8,19 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import static com.harshild.mips.AppConstants.*;
+import static com.harshild.mips.AppConstants.ICACHE_BLOCK_SIZE;
 
 @NoArgsConstructor
 @RequiredArgsConstructor
 public class ICacheStage {
-    boolean busy = false;
-    static String[][] iCache = new String[ICACHE_BLOCK_SIZE][ICACHE_BLOCK_SIZE];
-
-    @NonNull
-    int clockCycle;
-
-    @NonNull
-    int mainMemoryClockCycle;
     public static int accessCount;
     public static int hitCount;
-
+    static String[][] iCache = new String[ICACHE_BLOCK_SIZE][ICACHE_BLOCK_SIZE];
+    boolean busy = false;
+    @NonNull
+    int clockCycle;
+    @NonNull
+    int mainMemoryClockCycle;
 
     public boolean isBusy() {
         return busy;
@@ -35,10 +32,10 @@ public class ICacheStage {
 
     public int getClockCycleReq(Instruction instruction) {
         accessCount++;
-        if(isAHit(instruction)){
+        if (isAHit(instruction)) {
             hitCount++;
             return clockCycle;
-        }else{
+        } else {
             addToICache(instruction);
             return penalty();
         }
@@ -49,7 +46,7 @@ public class ICacheStage {
         int index = (insIndex / ICACHE_BLOCK_SIZE) % ICACHE_BLOCK_SIZE;
         List<Instruction> instructions = ClassFactory.getProgram().getInstructions();
         for (int i = 0; i < ICACHE_BLOCK_SIZE; i++) {
-            if(instructions.size() > insIndex + i) {
+            if (instructions.size() > insIndex + i) {
                 iCache[index][i] = instructions.get(insIndex + i).getStringIns();
             }
         }
@@ -68,10 +65,10 @@ public class ICacheStage {
 
         for (int i = 0; i < ICACHE_BLOCK_SIZE; i++) {
             for (int j = 0; j < ICACHE_BLOCK_SIZE; j++) {
-                if(iCache[i][j]!= null && iCache[i][j].equalsIgnoreCase(instruction.getStringIns())){
+                if (iCache[i][j] != null && iCache[i][j].equalsIgnoreCase(instruction.getStringIns())) {
                     for (int k = 0; k < ICACHE_BLOCK_SIZE; k++) {
-                        if(iCache[i][k] != null && instructions.size() > instruction.getInsIndex() - j + k && !iCache[i][k].equals(instructions.get(instruction.getInsIndex() - j + k).getStringIns())) {
-                             return false;
+                        if (iCache[i][k] != null && instructions.size() > instruction.getInsIndex() - j + k && !iCache[i][k].equals(instructions.get(instruction.getInsIndex() - j + k).getStringIns())) {
+                            return false;
                         }
                     }
                     return true;

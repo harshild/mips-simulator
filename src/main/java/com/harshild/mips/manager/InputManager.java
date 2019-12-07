@@ -13,7 +13,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InputManager {
-    public List<Mem> readData(String filePath) throws ConfigurationReadErrorException{
+    public static Instruction parseInstLine(String line, String lineRaw, int instIndex) throws Exception {
+        line = StringUtils.normalizeSpace(line);
+        String[] tokens = line.trim().split("[\\s]", 2);
+        String opcode = tokens[0].trim();
+        Instruction instruction = new Instruction();
+        instruction.setInstructionName(opcode);
+        instruction.setStringIns(line);
+        instruction.setInsIndex(instIndex);
+        instruction.setCurrentStage(AppConstants.ICACHE);
+        instruction.setRawStringIns(lineRaw);
+        return instruction;
+    }
+
+    public List<Mem> readData(String filePath) throws ConfigurationReadErrorException {
         List<Mem> memList = new ArrayList<>();
 
         BufferedReader reader = null;
@@ -24,21 +37,21 @@ public class InputManager {
 
             int address = 0x100;
             while ((line = reader.readLine()) != null) {
-                if(!line.trim().equals("")) {
-                    Mem mem = new Mem(address, Integer.parseInt(line.trim(), 2),false);
+                if (!line.trim().equals("")) {
+                    Mem mem = new Mem(address, Integer.parseInt(line.trim(), 2), false);
                     memList.add(mem);
                 }
-                address ++;
+                address++;
             }
             reader.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ConfigurationReadErrorException(e.getMessage());
         }
         return memList;
     }
 
-    public List<Reg> readReg(String filePath) throws ConfigurationReadErrorException{
+    public List<Reg> readReg(String filePath) throws ConfigurationReadErrorException {
         List<Reg> regs = new ArrayList<>();
 
         BufferedReader reader = null;
@@ -48,20 +61,20 @@ public class InputManager {
             String line = null;
 
             while ((line = reader.readLine()) != null) {
-                if(!line.trim().equals("")) {
+                if (!line.trim().equals("")) {
                     Reg reg = new Reg(false, Integer.parseInt(line.trim(), 2));
                     regs.add(reg);
                 }
             }
             reader.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ConfigurationReadErrorException(e.getMessage());
         }
         return regs;
     }
 
-    public List<Config> readConfig(String filePath) throws ConfigurationReadErrorException{
+    public List<Config> readConfig(String filePath) throws ConfigurationReadErrorException {
         List<Config> configList = new ArrayList<>();
 
         BufferedReader reader = null;
@@ -72,7 +85,7 @@ public class InputManager {
 
             int address = 0x100;
             while ((line = reader.readLine()) != null) {
-                if(!line.trim().equals("")) {
+                if (!line.trim().equals("")) {
                     String key = line.split(":")[0].trim();
                     String value = line.split(":")[1].trim();
                     Config config = new Config(key,
@@ -80,10 +93,10 @@ public class InputManager {
                             value.split(",").length == 2 && value.split(",")[0].trim().toLowerCase().equals("yes"));
                     configList.add(config);
                 }
-                address ++;
+                address++;
             }
             reader.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ConfigurationReadErrorException(e.getMessage());
         }
@@ -105,7 +118,7 @@ public class InputManager {
                 line = line.trim();
                 String lineRaw = line;
 
-                if(line.contains(":")){
+                if (line.contains(":")) {
                     currentLabel = new Label();
                     String[] split = line.split(":");
                     currentLabel.setName(split[0].trim());
@@ -113,16 +126,16 @@ public class InputManager {
                     line = split[1].trim();
                 }
 
-                if((line.startsWith("BNE") || line.startsWith("BEQ") )
-                        && currentLabel != null){
+                if ((line.startsWith("BNE") || line.startsWith("BEQ"))
+                        && currentLabel != null) {
                     currentLabel.setEndInstructionIndex(instIndex);
                     program.addLabel(currentLabel);
                 }
-                program.addInstruction(parseInstLine(line,lineRaw,instIndex));
-                instIndex ++;
+                program.addInstruction(parseInstLine(line, lineRaw, instIndex));
+                instIndex++;
             }
             reader.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new ConfigurationReadErrorException(e.getMessage());
         }
         return program;
@@ -130,20 +143,6 @@ public class InputManager {
 
     private Instruction parseInst(String instLine) {
         return null;
-    }
-
-
-    public static Instruction parseInstLine(String line, String lineRaw, int instIndex) throws Exception {
-        line = StringUtils.normalizeSpace(line);
-        String[] tokens = line.trim().split("[\\s]", 2);
-        String opcode = tokens[0].trim();
-        Instruction instruction = new Instruction();
-        instruction.setInstructionName(opcode);
-        instruction.setStringIns(line);
-        instruction.setInsIndex(instIndex);
-        instruction.setCurrentStage(AppConstants.ICACHE);
-        instruction.setRawStringIns(lineRaw);
-        return instruction;
     }
 
 }

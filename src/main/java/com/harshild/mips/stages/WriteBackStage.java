@@ -40,16 +40,16 @@ public class WriteBackStage {
 
     public void updateResults(Instruction instruction) {
         String des = ClassFactory.getDecodeStage().getDes(instruction);
-        if(AppConstants.store.contains(instruction.getInstructionName())){
-            int directReg = Integer.parseInt(instruction.getStringIns().split(" ")[2].trim().replace(",","").trim().split("\\(")[0]);
+        if (AppConstants.store.contains(instruction.getInstructionName())) {
+            int directReg = Integer.parseInt(instruction.getStringIns().split(" ")[2].trim().replace(",", "").trim().split("\\(")[0]);
             int reg = 0;
             if (des.charAt(0) == 'R')
                 reg = ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).getValue();
             else if (des.charAt(0) == 'F')
                 reg = ClassFactory.getRegisterFloat().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).getValue();
-            int add = directReg +reg ;
+            int add = directReg + reg;
             ClassFactory.getMemory().getData().get(ClassFactory.getMemory().getData().indexOf(new Mem(add))).setData(instruction.getInsOut());
-        }else {
+        } else {
             if (des.charAt(0) == 'R')
                 ClassFactory.getRegisterInteger().getRegs().get(Integer.parseInt(String.valueOf(des.charAt(1)))).setValue(instruction.getInsOut());
             else if (des.charAt(0) == 'F')

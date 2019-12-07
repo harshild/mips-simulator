@@ -23,14 +23,15 @@ public class MipsSimulator {
     static String regFile;
     static String configFile;
     static String outFile;
+
     public static void main(String[] args) throws ConfigurationReadErrorException, IOException {
         InputManager inputManager = ClassFactory.getInputManager();
 
-        instFile = "./test_cases/test_case_3/inst.txt";
-        dataFile = "./test_cases/test_case_3/data.txt";
-        regFile = "./test_cases/test_case_3/reg.txt";
-        configFile = "./test_cases/test_case_3/config.txt";
-        outFile = "./test_cases/test_case_3/result-new.txt";
+        instFile = args[0];
+        dataFile = args[1];
+        regFile = args[2];
+        configFile = args[3];
+        outFile = args[4];
 
         Program program = inputManager.readInst(instFile);
         List<Mem> data = inputManager.readData(dataFile);
@@ -75,7 +76,7 @@ public class MipsSimulator {
                                 instruction.setCurrentStage(ID);
                                 if (fetchStage.isSpecialPurpose(instruction)) {
                                     instruction.setCurrentStage(ICACHE);
-                                    instruction.setEndClockCycleForCurrentStage(clockCycle+1);
+                                    instruction.setEndClockCycleForCurrentStage(clockCycle + 1);
 
                                     if (program.getInstructions().get(instruction.getInsIndex() - 2).getCurrentStage().equals(FINISH)) {
                                         lastInstToEndId++;
@@ -84,7 +85,7 @@ public class MipsSimulator {
                                         instruction.setCurrentStage(FINISH);
                                         iCache.setBusy(false);
                                     }
-                                }else {
+                                } else {
                                     instruction.setStartClockCycleForCurrentStage(0);
                                     instruction.setClockCycleIF(clockCycle);
                                     iCache.setBusy(false);
@@ -117,8 +118,8 @@ public class MipsSimulator {
                                 instruction.setStartClockCycleForCurrentStage(clockCycle);
                                 decodeStage.blockDesLoc(instruction);
                                 decodeStage.setBusy(true);
-                            }else{
-                                if(decodeStage.areSourceBusy(instruction))
+                            } else {
+                                if (decodeStage.areSourceBusy(instruction))
                                     instruction.setHzRAW(true);
                             }
 //                            if(instruction.getEndClockCycleForCurrentStage() == clockCycle && decodeStage.areSourceBusy(instruction)){
@@ -147,7 +148,7 @@ public class MipsSimulator {
                         dCacheUsedUp = clockCycle;
                         if (instruction.getStartClockCycleForCurrentStage() == 0) {
                             instruction.setEndClockCycleForCurrentStage(clockCycle + dCacheStage.getClockCycleReq(instruction) - 1);
-                            if(Arrays.asList("L.D","S.D").contains(instruction.getInstructionName())){
+                            if (Arrays.asList("L.D", "S.D").contains(instruction.getInstructionName())) {
                                 dCacheStage.getClockCycleReq(instruction);
                             }
                             instruction.setStartClockCycleForCurrentStage(clockCycle);
@@ -162,7 +163,7 @@ public class MipsSimulator {
                     case EX:
                         if (instruction.getStartClockCycleForCurrentStage() == 0) {
                             int i = ClassFactory.getExecutionManger().executeInstruction(instruction, clockCycle);
-                            if(i==-1){
+                            if (i == -1) {
                                 instruction.setHzStruct(true);
                             }
                             if (i != -1) {
@@ -203,7 +204,7 @@ public class MipsSimulator {
                         if (program.getInstructions().get(program.getInstructions().size() - 1) == instruction) {
                             List<String> output = formatOutput(program.getInstructions());
 
-                            write(output,true,true);
+                            write(output, true, true);
 
                             System.exit(0);
                         }
@@ -211,7 +212,7 @@ public class MipsSimulator {
                 }
             }
 
-            if(controlIns!=null){
+            if (controlIns != null) {
                 executionManger.executeControlInstruction(controlIns);
             }
             clockCycle++;
@@ -220,18 +221,18 @@ public class MipsSimulator {
 
     private static void write(List<String> output, boolean writeToFile, boolean writeToConsole) throws IOException {
         BufferedWriter writer = null;
-        if(writeToFile)
+        if (writeToFile)
             writer = new BufferedWriter(new FileWriter(new File(outFile)));
         for (String line : output) {
-            if(writeToFile) {
+            if (writeToFile) {
                 writer.write(line);
                 writer.newLine();
             }
-            if(writeToConsole)
+            if (writeToConsole)
                 System.out.println(line);
         }
 
-        if(writeToFile)
+        if (writeToFile)
             writer.close();
     }
 
@@ -254,16 +255,16 @@ public class MipsSimulator {
 
         for (Instruction instruction : instructions) {
             output.add(String.format(instructionOutputFormatString,
-                    instruction.getRawStringIns().contains(":") ? instruction.getRawStringIns().split(":")[0]+":" : "",
+                    instruction.getRawStringIns().contains(":") ? instruction.getRawStringIns().split(":")[0] + ":" : "",
                     instruction.getStringIns(),
                     getCCValueForPrint(instruction.getClockCycleIF()),
                     getCCValueForPrint(instruction.getClockCycleID()),
                     getCCValueForPrint(instruction.getClockCycleEX()),
                     getCCValueForPrint(instruction.getClockCycleWB()),
-                    instruction.getClockCycleID() - instruction.getClockCycleIF() > 1 ? "Y":"N",
-                    instruction.isHzWAR() ? "Y":"N",
-                    instruction.isHzWAW() ? "Y":"N",
-                    instruction.isHzStruct() ? "Y":"N"
+                    instruction.getClockCycleID() - instruction.getClockCycleIF() > 1 ? "Y" : "N",
+                    instruction.isHzWAR() ? "Y" : "N",
+                    instruction.isHzWAW() ? "Y" : "N",
+                    instruction.isHzStruct() ? "Y" : "N"
                     )
             );
         }
@@ -277,7 +278,7 @@ public class MipsSimulator {
     }
 
     private static String getCCValueForPrint(int clockCycle) {
-        return clockCycle == 0 ? "": String.valueOf(clockCycle);
+        return clockCycle == 0 ? "" : String.valueOf(clockCycle);
     }
 
     private static void initializeMemory(List<Mem> data) {

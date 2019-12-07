@@ -10,7 +10,7 @@ import java.util.Objects;
 public class Mem {
     int address;
     int data;
-    boolean busy =false;
+    boolean busy = false;
 
     public Mem(int address) {
         this.address = address;

@@ -40,6 +40,7 @@ public class FetchStage {
     public boolean isControl(Instruction instruction) {
         return AppConstants.control.contains(instruction.getInstructionName().trim());
     }
+
     public boolean isSpecialPurpose(Instruction instruction) {
         return AppConstants.specialOp.contains(instruction.getInstructionName().trim());
     }

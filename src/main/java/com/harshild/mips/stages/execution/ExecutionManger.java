@@ -151,26 +151,26 @@ public class ExecutionManger {
     public void executeControlInstruction(Instruction instruction) {
         String opCode = instruction.getInstructionName();
         String label = "";
-        if(opCode.equalsIgnoreCase("J")){
+        if (opCode.equalsIgnoreCase("J")) {
             label = instruction.getStringIns().split(" ")[1].trim();
-        }else{
-            String[] s = instruction.getStringIns().replace(",","").split(" ");
+        } else {
+            String[] s = instruction.getStringIns().replace(",", "").split(" ");
             String reg1 = s[1].trim();
             String reg2 = s[2].trim();
             String labelTemp = s[3].trim();
-            if(opCode.equalsIgnoreCase("BNE"))
-                label = getValForSrc(Arrays.asList(reg1),0) != getValForSrc(Arrays.asList(reg2),0) ? labelTemp : "";
-            if(opCode.equalsIgnoreCase("BEQ"))
-                label = getValForSrc(Arrays.asList(reg1),0) == getValForSrc(Arrays.asList(reg2),0) ? labelTemp : "";
+            if (opCode.equalsIgnoreCase("BNE"))
+                label = getValForSrc(Arrays.asList(reg1), 0) != getValForSrc(Arrays.asList(reg2), 0) ? labelTemp : "";
+            if (opCode.equalsIgnoreCase("BEQ"))
+                label = getValForSrc(Arrays.asList(reg1), 0) == getValForSrc(Arrays.asList(reg2), 0) ? labelTemp : "";
         }
 
-        if(!label.equals("")) {
+        if (!label.equals("")) {
             Label label1 = ClassFactory.getProgram().getLabels().get(ClassFactory.getProgram().getLabels().indexOf(new Label(label)));
 
 
             List<Instruction> instructions = new ArrayList<>(ClassFactory.getProgram().getInstructions());
             int startIndex = instruction.getInsIndex() + 2;
-            List<Instruction> remainingIns = new ArrayList<>(instructions.subList(startIndex-1, instructions.size() - 1));
+            List<Instruction> remainingIns = new ArrayList<>(instructions.subList(startIndex - 1, instructions.size() - 1));
 
             for (int in = label1.getStartInstructionIndex(); in <= label1.getEndInstructionIndex() + 1; in++) {
                 ClassFactory.getProgram().addInstruction(instructions.get(in), startIndex + (in - label1.getStartInstructionIndex()));
