@@ -37,11 +37,15 @@ public class InputManager {
 
             int address = 0x100;
             while ((line = reader.readLine()) != null) {
-                if (!line.trim().equals("")) {
-                    Mem mem = new Mem(address, Integer.parseInt(line.trim(), 2), false);
-                    memList.add(mem);
+                try {
+                    if (!line.trim().equals("")) {
+                        Mem mem = new Mem(address, Integer.parseInt(line.trim(), 2), false);
+                        memList.add(mem);
+                    }
+                    address++;
+                }catch (Exception e){
+                    throw new ConfigurationReadErrorException(getErrorString(filePath, line));
                 }
-                address++;
             }
             reader.close();
         } catch (Exception e) {
@@ -61,9 +65,13 @@ public class InputManager {
             String line = null;
 
             while ((line = reader.readLine()) != null) {
-                if (!line.trim().equals("")) {
-                    Reg reg = new Reg(false, Integer.parseInt(line.trim(), 2));
-                    regs.add(reg);
+                try {
+                    if (!line.trim().equals("")) {
+                        Reg reg = new Reg(false, Integer.parseInt(line.trim(), 2));
+                        regs.add(reg);
+                    }
+                }catch (Exception e){
+                    throw new ConfigurationReadErrorException(getErrorString(filePath, line));
                 }
             }
             reader.close();
@@ -85,22 +93,29 @@ public class InputManager {
 
             int address = 0x100;
             while ((line = reader.readLine()) != null) {
-                if (!line.trim().equals("")) {
-                    String key = line.split(":")[0].trim();
-                    String value = line.split(":")[1].trim();
-                    Config config = new Config(key,
-                            Integer.parseInt(value.split(",")[0].trim()),
-                            value.split(",").length == 2 && value.split(",")[0].trim().toLowerCase().equals("yes"));
-                    configList.add(config);
+                try {
+                    if (!line.trim().equals("")) {
+                        String key = line.split(":")[0].trim();
+                        String value = line.split(":")[1].trim();
+                        Config config = new Config(key,
+                                Integer.parseInt(value.split(",")[0].trim()),
+                                value.split(",").length == 2 && value.split(",")[0].trim().toLowerCase().equals("yes"));
+                        configList.add(config);
+                    }
+                    address++;
+                }catch (Exception e){
+                    throw new ConfigurationReadErrorException(getErrorString(filePath, line));
                 }
-                address++;
             }
             reader.close();
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ConfigurationReadErrorException(e.getMessage());
         }
         return configList;
+    }
+
+    private String getErrorString(String filePath, String line) {
+        return "Issue in line "+line+" of file "+filePath;
     }
 
     public Program readInst(String filePath) throws ConfigurationReadErrorException {
@@ -115,34 +130,34 @@ public class InputManager {
             Label currentLabel = null;
 
             while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                String lineRaw = line;
+                try {
+                    line = line.trim();
+                    String lineRaw = line;
 
-                if (line.contains(":")) {
-                    currentLabel = new Label();
-                    String[] split = line.split(":");
-                    currentLabel.setName(split[0].trim());
-                    currentLabel.setStartInstructionIndex(instIndex);
-                    line = split[1].trim();
-                }
+                    if (line.contains(":")) {
+                        currentLabel = new Label();
+                        String[] split = line.split(":");
+                        currentLabel.setName(split[0].trim());
+                        currentLabel.setStartInstructionIndex(instIndex);
+                        line = split[1].trim();
+                    }
 
-                if ((line.startsWith("BNE") || line.startsWith("BEQ"))
-                        && currentLabel != null) {
-                    currentLabel.setEndInstructionIndex(instIndex);
-                    program.addLabel(currentLabel);
+                    if ((line.startsWith("BNE") || line.startsWith("BEQ"))
+                            && currentLabel != null) {
+                        currentLabel.setEndInstructionIndex(instIndex);
+                        program.addLabel(currentLabel);
+                    }
+                    program.addInstruction(parseInstLine(line, lineRaw, instIndex));
+                    instIndex++;
+                }catch (Exception e){
+                    throw new ConfigurationReadErrorException(getErrorString(filePath, line));
                 }
-                program.addInstruction(parseInstLine(line, lineRaw, instIndex));
-                instIndex++;
             }
             reader.close();
         } catch (Exception e) {
             throw new ConfigurationReadErrorException(e.getMessage());
         }
         return program;
-    }
-
-    private Instruction parseInst(String instLine) {
-        return null;
     }
 
 }
