@@ -1,5 +1,11 @@
 plugins {
     id 'java'
+    id 'application'
+}
+
+application {
+    // URI of your main class/application's entry point (required)
+    mainClassName = 'com.harshild.mips.MipsSimulator'
 }
 
 group 'com.harshild'
