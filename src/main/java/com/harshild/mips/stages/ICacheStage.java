@@ -61,9 +61,19 @@ public class ICacheStage {
     }
 
     private boolean isAHit(Instruction instruction) {
+        int insIndex = instruction.getInsIndex();
+        int index = (insIndex / ICACHE_BLOCK_SIZE) % ICACHE_BLOCK_SIZE;
+        List<Instruction> instructions = ClassFactory.getProgram().getInstructions();
+
+
         for (int i = 0; i < ICACHE_BLOCK_SIZE; i++) {
             for (int j = 0; j < ICACHE_BLOCK_SIZE; j++) {
                 if(iCache[i][j]!= null && iCache[i][j].equalsIgnoreCase(instruction.getStringIns())){
+                    for (int k = 0; k < ICACHE_BLOCK_SIZE; k++) {
+                        if(iCache[i][k] != null && instructions.size() > instruction.getInsIndex() - j + k && !iCache[i][k].equals(instructions.get(instruction.getInsIndex() - j + k).getStringIns())) {
+                             return false;
+                        }
+                    }
                     return true;
                 }
             }

@@ -7,19 +7,35 @@ import com.harshild.mips.manager.InputManager;
 import com.harshild.mips.stages.*;
 import com.harshild.mips.stages.execution.ExecutionManger;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.harshild.mips.AppConstants.*;
 
 public class MipsSimulator {
-
-    public static void main(String[] args) throws ConfigurationReadErrorException {
+    static String instFile;
+    static String dataFile;
+    static String regFile;
+    static String configFile;
+    static String outFile;
+    public static void main(String[] args) throws ConfigurationReadErrorException, IOException {
         InputManager inputManager = ClassFactory.getInputManager();
 
-        Program program = inputManager.readInst("./test_cases/test_case_1/inst.txt");
-        List<Mem> data = inputManager.readData("./test_cases/test_case_1/data.txt");
-        List<Reg> regs = inputManager.readReg("./test_cases/test_case_1/reg.txt");
-        List<Config> configs = inputManager.readConfig("./test_cases/test_case_1/config.txt");
+        instFile = "./test_cases/test_case_3/inst.txt";
+        dataFile = "./test_cases/test_case_3/data.txt";
+        regFile = "./test_cases/test_case_3/reg.txt";
+        configFile = "./test_cases/test_case_3/config.txt";
+        outFile = "./test_cases/test_case_3/result-new.txt";
+
+        Program program = inputManager.readInst(instFile);
+        List<Mem> data = inputManager.readData(dataFile);
+        List<Reg> regs = inputManager.readReg(regFile);
+        List<Config> configs = inputManager.readConfig(configFile);
 
         initializeRegisters(regs);
         initializeMemory(data);
@@ -57,38 +73,44 @@ public class MipsSimulator {
                             }
                             if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
                                 instruction.setCurrentStage(ID);
-                                if (fetchStage.isControl(instruction) || fetchStage.isSpecialPurpose(instruction)) {
+                                if (fetchStage.isSpecialPurpose(instruction)) {
+                                    instruction.setCurrentStage(ICACHE);
+                                    instruction.setEndClockCycleForCurrentStage(clockCycle+1);
+
                                     if (program.getInstructions().get(instruction.getInsIndex() - 2).getCurrentStage().equals(FINISH)) {
                                         lastInstToEndId++;
+                                        instruction.setClockCycleIF(clockCycle);
+                                        instruction.setStartClockCycleForCurrentStage(0);
                                         instruction.setCurrentStage(FINISH);
+                                        iCache.setBusy(false);
                                     }
+                                }else {
+                                    instruction.setStartClockCycleForCurrentStage(0);
+                                    instruction.setClockCycleIF(clockCycle);
+                                    iCache.setBusy(false);
                                 }
-                                instruction.setStartClockCycleForCurrentStage(0);
-                                instruction.setClockCycleIF(clockCycle);
-                                iCache.setBusy(false);
                             }
                         }
                         break;
-                    case IF:
-                        if (ifUsedUp != clockCycle) {
-                            ifUsedUp = clockCycle;
-                            if (!fetchStage.isBusy() && instruction.getStartClockCycleForCurrentStage() == 0) {
-                                instruction.setEndClockCycleForCurrentStage(clockCycle + fetchStage.getClockCycleReq(instruction) - 1);
-                                instruction.setStartClockCycleForCurrentStage(clockCycle);
-                                fetchStage.setBusy(true);
-                            }
-                            if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
-                                instruction.setCurrentStage(ID);
-                                instruction.setStartClockCycleForCurrentStage(0);
-                                fetchStage.setBusy(false);
-                                instruction.setClockCycleIF(clockCycle);
-                            }
-                        }
-                        break;
+//                    case IF:
+//                        if (ifUsedUp != clockCycle) {
+//                            ifUsedUp = clockCycle;
+//                            if (!fetchStage.isBusy() && instruction.getStartClockCycleForCurrentStage() == 0) {
+//                                instruction.setEndClockCycleForCurrentStage(clockCycle + fetchStage.getClockCycleReq(instruction) - 1);
+//                                instruction.setStartClockCycleForCurrentStage(clockCycle);
+//                                fetchStage.setBusy(true);
+//                            }
+//                            if (instruction.getEndClockCycleForCurrentStage() == clockCycle) {
+//                                instruction.setCurrentStage(ID);
+//                                instruction.setStartClockCycleForCurrentStage(0);
+//                                fetchStage.setBusy(false);
+//                                instruction.setClockCycleIF(clockCycle);
+//                            }
+//                        }
+//                        break;
                     case ID:
                         if (idUsedUp != clockCycle) {
                             idUsedUp = clockCycle;
-
 
                             if (!decodeStage.isBusy() && !decodeStage.areSourceBusy(instruction) && !decodeStage.istDesLocBusy(instruction) && instruction.getStartClockCycleForCurrentStage() == 0) {
                                 instruction.setEndClockCycleForCurrentStage(clockCycle + decodeStage.getClockCycleReq(instruction) - 1);
@@ -124,8 +146,10 @@ public class MipsSimulator {
                     case DCACHE:
                         dCacheUsedUp = clockCycle;
                         if (instruction.getStartClockCycleForCurrentStage() == 0) {
-                            System.out.println(instruction.getInsIndex());
                             instruction.setEndClockCycleForCurrentStage(clockCycle + dCacheStage.getClockCycleReq(instruction) - 1);
+                            if(Arrays.asList("L.D","S.D").contains(instruction.getInstructionName())){
+                                dCacheStage.getClockCycleReq(instruction);
+                            }
                             instruction.setStartClockCycleForCurrentStage(clockCycle);
                             dCacheStage.setBusy(true);
                         }
@@ -177,7 +201,10 @@ public class MipsSimulator {
                         break;
                     case FINISH:
                         if (program.getInstructions().get(program.getInstructions().size() - 1) == instruction) {
-                            printOutPutAsTable(program.getInstructions());
+                            List<String> output = formatOutput(program.getInstructions());
+
+                            write(output,true,true);
+
                             System.exit(0);
                         }
                         break;
@@ -191,10 +218,27 @@ public class MipsSimulator {
         }
     }
 
-    private static void printOutPutAsTable(List<Instruction> instructions) {
-        String instructionOutputFormatString = "%-4s %-25s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s";
+    private static void write(List<String> output, boolean writeToFile, boolean writeToConsole) throws IOException {
+        BufferedWriter writer = null;
+        if(writeToFile)
+            writer = new BufferedWriter(new FileWriter(new File(outFile)));
+        for (String line : output) {
+            if(writeToFile) {
+                writer.write(line);
+                writer.newLine();
+            }
+            if(writeToConsole)
+                System.out.println(line);
+        }
 
-        System.out.println(String.format(instructionOutputFormatString,
+        if(writeToFile)
+            writer.close();
+    }
+
+    private static List<String> formatOutput(List<Instruction> instructions) {
+        String instructionOutputFormatString = "%-4s %-25s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s  %-4s";
+        List<String> output = new ArrayList<>();
+        output.add(String.format(instructionOutputFormatString,
                 "",
                 "Instruction",
                 "FT",
@@ -209,7 +253,7 @@ public class MipsSimulator {
         );
 
         for (Instruction instruction : instructions) {
-            System.out.println(String.format(instructionOutputFormatString,
+            output.add(String.format(instructionOutputFormatString,
                     instruction.getRawStringIns().contains(":") ? instruction.getRawStringIns().split(":")[0]+":" : "",
                     instruction.getStringIns(),
                     getCCValueForPrint(instruction.getClockCycleIF()),
@@ -224,11 +268,12 @@ public class MipsSimulator {
             );
         }
 
-        System.out.println("\nTotal number of access requests for instruction cache: " + ICacheStage.accessCount);
-        System.out.println("\nNumber of instruction cache hits: " + ICacheStage.hitCount);
-        System.out.println("\nTotal number of access requests for data cache: " + DCacheStage.accessCount);
-        System.out.println("\nNumber of data cache hits: " + DCacheStage.hitCount);
+        output.add("\nTotal number of access requests for instruction cache: " + ICacheStage.accessCount);
+        output.add("\nNumber of instruction cache hits: " + ICacheStage.hitCount);
+        output.add("\nTotal number of access requests for data cache: " + DCacheStage.accessCount);
+        output.add("\nNumber of data cache hits: " + DCacheStage.hitCount);
 
+        return output;
     }
 
     private static String getCCValueForPrint(int clockCycle) {

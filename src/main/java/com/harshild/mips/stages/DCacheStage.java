@@ -11,6 +11,7 @@ import java.util.List;
 public class DCacheStage {
     private boolean busy = false;
     static String[][] dCache = new String[2][4];
+    static int recentUsed = 0;
     public static int accessCount = 0;
     public static int hitCount = 0;
     @NonNull
@@ -35,13 +36,13 @@ public class DCacheStage {
     }
 
     private void addToDCache(int registerIndex) {
-        int row = (registerIndex / 4) % 2;
-        int columnStartIndex = (registerIndex / 4 )*4;
+        int columnStartIndex = ((registerIndex - 1) / 4 )*4;
 
-        List<Instruction> instructions = ClassFactory.getProgram().getInstructions();
+        int canBeReplaced = recentUsed == 0 ? 1 : 0 ;
         for (int i = 0; i < 4; i++) {
-            dCache[row][i] = String.valueOf(columnStartIndex + i);
+            dCache[canBeReplaced][i] = String.valueOf(columnStartIndex + i + 1);
         }
+        recentUsed = canBeReplaced;
 
     }
 
@@ -50,10 +51,17 @@ public class DCacheStage {
     }
 
     private boolean isAHit(int registerIndex) {
-        int row = (registerIndex / 4) % 2;
-        int column = (registerIndex / 4 ) + registerIndex % 4;
+        int columnStartIndex = ((registerIndex - 1) / 4 )*4;
 
-        return (dCache[row][column] != null && dCache[row][column].equalsIgnoreCase(String.valueOf(registerIndex)));
+        for (int i = 0; i < 2; i++) {
+            if(dCache[i][0]!= null && dCache[i][0].equals(String.valueOf(columnStartIndex+1))){
+                if(dCache[i][registerIndex-columnStartIndex-1].equals(String.valueOf(registerIndex)))
+                    recentUsed = i;
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isBusy() {
